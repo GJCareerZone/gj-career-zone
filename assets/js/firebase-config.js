@@ -1,5 +1,3 @@
-import { initializeApp } from "firebase/app";
-
 export const firebaseConfig = {
   apiKey: "AIzaSyCDhwSCOBWd4CRYXZi0d5RbAnm9UxX4myQ",
   authDomain: "gj-career-zone-a7424.firebaseapp.com",
@@ -8,9 +6,6 @@ export const firebaseConfig = {
   messagingSenderId: "993552987589",
   appId: "1:993552987589:web:7ad12b27e3a880aa5447ac"
 };
-
-// Initialize Firebase
-export const app = initializeApp(firebaseConfig);
 
 export const INSTITUTE = {
   name: "Gian Jyoti Institute of Management and Technology",
