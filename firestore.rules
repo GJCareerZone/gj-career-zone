@@ -1,0 +1,126 @@
+rules_version = '2';
+
+/*
+  GJ Career Zone — Firestore security rules
+
+  These rules are the only thing standing between a curious student and
+  every other student's counselling record. The web app keys in
+  assets/js/firebase-config.js are public by design; this file is not
+  optional. Publish it before you share the site with anyone.
+
+  Paste the whole file into
+  Firebase console → Firestore Database → Rules → Publish,
+  or run:  firebase deploy --only firestore:rules
+*/
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function role() {
+      return signedIn() ? profile().role : 'none';
+    }
+
+    function isAdmin()   { return role() == 'admin'; }
+    function isFaculty() { return role() == 'faculty'; }
+    function isStudent() { return role() == 'student'; }
+    function isSelf(uid) { return signedIn() && request.auth.uid == uid; }
+
+    /* ---------------- users ----------------
+       A student may create only their own document and only as a student,
+       which is what stops someone registering themselves as an admin.
+       Everyone signed in can read admin contact records so the app can
+       route notifications to the office. */
+    match /users/{uid} {
+      allow read: if isSelf(uid)
+                  || isAdmin()
+                  || isFaculty()
+                  || (signedIn() && resource.data.role == 'admin');
+
+      allow create: if (isSelf(uid) && request.resource.data.role == 'student')
+                    || isAdmin();
+
+      allow update: if isAdmin()
+                    || (isSelf(uid) && request.resource.data.role == resource.data.role);
+
+      allow delete: if isAdmin();
+    }
+
+    /* ---------------- profiling forms ----------------
+       Document id is the student's uid, so there is exactly one per student.
+       Faculty can read them because a mentor needs the background of the
+       student they have been given. */
+    match /profilingForms/{studentId} {
+      allow read: if isSelf(studentId) || isAdmin() || isFaculty();
+      allow create, update: if isSelf(studentId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    /* ---------------- counselling requests ----------------
+       A student sees only their own. A mentor sees only the ones assigned
+       to them. The office sees everything. */
+    match /counsellingRequests/{requestId} {
+      allow read: if isAdmin()
+                  || (signedIn() && resource.data.studentId == request.auth.uid)
+                  || (isFaculty() && resource.data.assignedFacultyId == request.auth.uid);
+
+      allow create: if isStudent()
+                    && request.resource.data.studentId == request.auth.uid
+                    && request.resource.data.status == 'submitted';
+
+      allow update: if isAdmin()
+                    || (isFaculty() && resource.data.assignedFacultyId == request.auth.uid);
+
+      allow delete: if isAdmin();
+    }
+
+    /* ---------------- mentor–mentee reviews ----------------
+       Written by the assigned mentor, readable by that mentor, the student
+       it is about, and the office. */
+    match /mentorForms/{formId} {
+      allow read: if isAdmin()
+                  || (signedIn() && resource.data.studentId == request.auth.uid)
+                  || (isFaculty() && resource.data.facultyId == request.auth.uid);
+
+      allow create: if isAdmin()
+                    || (isFaculty() && request.resource.data.facultyId == request.auth.uid);
+
+      allow update: if isAdmin()
+                    || (isFaculty() && resource.data.facultyId == request.auth.uid);
+
+      allow delete: if isAdmin();
+    }
+
+    /* ---------------- notifications ----------------
+       Anyone signed in may raise an alert for someone else (a student's
+       submission alerts the office), but you can only read and dismiss
+       your own. */
+    match /notifications/{noteId} {
+      allow read, update: if isAdmin()
+                          || (signedIn() && resource.data.toUid == request.auth.uid);
+      allow create: if signedIn();
+      allow delete: if isAdmin();
+    }
+
+    /* ---------------- audit log ----------------
+       Append-only. Nobody, including admins, may edit or delete an entry
+       from the app. */
+    match /auditLogs/{entryId} {
+      allow read: if isAdmin();
+      allow create: if signedIn();
+      allow update, delete: if false;
+    }
+
+    /* Anything not matched above is denied. */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

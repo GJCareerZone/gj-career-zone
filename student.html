@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My dashboard — GJ Career Zone</title>
+<link rel="icon" href="assets/img/logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<header class="appbar" id="appbar"></header>
+
+<nav class="tabbar" aria-label="Sections">
+  <div class="wrap" style="display:flex;gap:.25rem">
+    <button data-tab="overview" role="tab">Overview</button>
+    <button data-tab="profile" role="tab">Profiling form</button>
+    <button data-tab="request" role="tab">Ask for counselling</button>
+    <button data-tab="records" role="tab">My requests</button>
+    <button data-tab="sessions" role="tab">Session records</button>
+    <button data-tab="alerts" role="tab">Alerts</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- OVERVIEW -->
+  <section class="panel" data-panel="overview">
+    <div id="overviewBanner"></div>
+    <div class="grid four" style="margin-top:1rem" id="overviewStats"></div>
+    <div class="grid two" style="margin-top:1rem">
+      <div class="card">
+        <span class="eyebrow">Latest request</span>
+        <div id="overviewLatest" class="skeleton">Loading…</div>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Recent alerts</span>
+        <div id="overviewAlerts" class="skeleton">Loading…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROFILING FORM -->
+  <section class="panel" data-panel="profile">
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <span class="eyebrow">Form 1 of 3 · filled once</span>
+          <h2>Student profiling form</h2>
+          <p class="muted small" style="margin:.2rem 0 0">
+            This goes to the Career Zone office and stays with your file. You can update it any time.
+          </p>
+        </div>
+        <div class="spacer"></div>
+        <span class="chip" id="profileStatusChip">Not submitted</span>
+      </div>
+
+      <form id="profilingForm">
+        <fieldset>
+          <legend>Personal details</legend>
+          <div class="grid two">
+            <div class="field"><label for="p_name">Name</label><input id="p_name" name="name" type="text" required></div>
+            <div class="field"><label for="p_phone">Phone number</label><input id="p_phone" name="phone" type="tel" required></div>
+            <div class="field"><label for="p_course">Course & batch</label><input id="p_course" name="courseBatch" type="text" placeholder="e.g. MBA 2024-26" required></div>
+            <div class="field"><label for="p_year">Year / semester</label><input id="p_year" name="yearSem" type="text" required></div>
+            <div class="field"><label for="p_address">Present address</label><input id="p_address" name="address" type="text"></div>
+            <div class="field"><label for="p_whatsapp">WhatsApp number</label><input id="p_whatsapp" name="whatsapp" type="tel"></div>
+            <div class="field"><label for="p_email">Email</label><input id="p_email" name="email" type="email" required></div>
+            <div class="field"><label for="p_blood">Blood group</label><input id="p_blood" name="bloodGroup" type="text" placeholder="e.g. B+"></div>
+            <div class="field"><label for="p_lang">Languages known</label><input id="p_lang" name="languages" type="text"></div>
+            <div class="field"><label for="p_hobby">Hobbies / interests</label><input id="p_hobby" name="hobbies" type="text"></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Family details</legend>
+          <div class="grid two">
+            <div class="field"><label for="p_members">Number of members</label><input id="p_members" name="familyMembers" type="number" min="1"></div>
+            <div class="field"><label for="p_occ">Parent's occupation</label><input id="p_occ" name="parentOccupation" type="text"></div>
+            <div class="field"><label for="p_income">Family annual income</label><input id="p_income" name="familyIncome" type="text" placeholder="e.g. 6,00,000"></div>
+            <div class="field"><label>Living with</label><div data-radios="livingWith" data-options="Family|PG/Hostel"></div></div>
+            <div class="field"><label>Family type</label><div data-radios="familyType" data-options="Nuclear|Joint"></div></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Educational background</legend>
+          <div id="eduTable"></div>
+          <div class="field" style="margin-top:1rem">
+            <label for="p_cert">Additional certifications</label>
+            <textarea id="p_cert" name="certifications" placeholder="One per line"></textarea>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Achievements</legend>
+          <div class="field"><label for="p_ach1">Community service</label><input id="p_ach1" name="achCommunity" type="text"></div>
+          <div class="field"><label for="p_ach2">Professional</label><input id="p_ach2" name="achProfessional" type="text"></div>
+          <div class="field"><label for="p_ach3">Academic</label><input id="p_ach3" name="achAcademic" type="text"></div>
+          <div class="field"><label for="p_ach4">Extra-curricular</label><input id="p_ach4" name="achExtra" type="text"></div>
+          <div class="field"><label for="p_ach5">Projects and leadership</label><input id="p_ach5" name="achProjects" type="text"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Skills</legend>
+          <div class="grid two">
+            <div class="field"><label for="p_sk1">Skills you already have</label><textarea id="p_sk1" name="skillsHave"></textarea></div>
+            <div class="field"><label for="p_sk2">Skills you want to develop</label><textarea id="p_sk2" name="skillsWant"></textarea></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Career</legend>
+          <p class="hint" style="margin-top:-.4rem">Where do you want to be at the end of each of the next three years?</p>
+          <div class="field"><label for="p_g1">Year 1</label><textarea id="p_g1" name="goalYear1"></textarea></div>
+          <div class="field"><label for="p_g2">Year 2</label><textarea id="p_g2" name="goalYear2"></textarea></div>
+          <div class="field"><label for="p_g3">Year 3</label><textarea id="p_g3" name="goalYear3"></textarea></div>
+          <div class="field"><label for="p_idol">Someone you look up to, other than your parents</label><input id="p_idol" name="idol" type="text"></div>
+          <div class="field">
+            <label>Challenges you are facing</label>
+            <div data-checks="challenges" data-name="challenges"></div>
+          </div>
+          <div class="field">
+            <label>Rank what matters most in a job — 1 is most important, 6 least</label>
+            <div id="rankTable"></div>
+          </div>
+          <div class="field">
+            <label>Support you would like from the Career Zone</label>
+            <div data-checks="supportNeeded" data-name="supportNeeded"></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Placement consent</legend>
+          <div class="grid two">
+            <div class="field"><label for="p_guardian">S/o, D/o</label><input id="p_guardian" name="guardianName" type="text"></div>
+            <div class="field"><label for="p_cs">Course & semester</label><input id="p_cs" name="courseSemester" type="text"></div>
+          </div>
+          <div class="field">
+            <label>Placement support from the GJIMT campus placement cell</label>
+            <div data-radios="placementConsent" data-options="I want placement support|I will arrange my own placement"></div>
+          </div>
+          <div class="field" id="noPlacementWrap" hidden>
+            <label>If you are arranging your own, tell us why</label>
+            <div data-radios="noPlacementReason" data-options="__NO_PLACEMENT__"></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Entrepreneurship mentoring</legend>
+          <div class="field">
+            <label>Are you interested in entrepreneurship?</label>
+            <div data-radios="entrepreneurInterest" data-options="Yes|No"></div>
+          </div>
+          <div class="field">
+            <label>Stage you are at</label>
+            <div data-radios="entrepreneurStage" data-options="Idea|Prototype|Existing startup"></div>
+          </div>
+          <div class="field">
+            <label>Areas that interest you</label>
+            <div data-checks="entrepreneurAreas" data-name="entrepreneurAreas"></div>
+          </div>
+          <div class="field"><label for="p_eo">Something else</label><input id="p_eo" name="entrepreneurOther" type="text"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Higher education mentoring</legend>
+          <div class="field">
+            <label>Planning to study further?</label>
+            <div data-radios="higherEdInterest" data-options="Yes|No"></div>
+          </div>
+          <div class="grid two">
+            <div class="field"><label for="p_deg">Degree</label><input id="p_deg" name="higherEdDegree" type="text"></div>
+            <div class="field"><label for="p_country">Country, if abroad</label><input id="p_country" name="higherEdCountry" type="text"></div>
+          </div>
+          <div class="field">
+            <label>Study location</label>
+            <div data-radios="higherEdLocation" data-options="India|Abroad"></div>
+          </div>
+          <div class="field"><label for="p_exams">Entrance exams you are preparing for</label><input id="p_exams" name="higherEdExams" type="text"></div>
+          <div class="field">
+            <label>Would you like help with</label>
+            <div data-checks="higherEdHelp" data-name="higherEdHelp"></div>
+          </div>
+          <div class="field"><label for="p_ho">Anything else</label><input id="p_ho" name="higherEdOther" type="text"></div>
+        </fieldset>
+
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1.5rem">
+          <button class="btn" type="submit">Save and send to Career Zone</button>
+          <button class="btn neutral" type="button" id="printProfile">Print</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- COUNSELLING REQUEST -->
+  <section class="panel" data-panel="request">
+    <div class="card hidden" id="requestGate"></div>
+    <div class="card hidden" id="requestCard">
+      <div class="card-head">
+        <div>
+          <span class="eyebrow">Form 2 of 3 · as often as you need</span>
+          <h2>Counselling request</h2>
+          <p class="muted small" style="margin:.2rem 0 0">
+            Only the Career Zone office and the mentor assigned to you will read this.
+          </p>
+        </div>
+      </div>
+
+      <form id="counsellingForm">
+        <fieldset>
+          <legend>Where you would like help</legend>
+          <div data-checks="counsellingAreas" data-name="areas"></div>
+          <div class="field" style="margin-top:.8rem">
+            <label for="c_other">Something not on the list</label>
+            <input id="c_other" name="otherArea" type="text">
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>In your own words</legend>
+          <div class="field">
+            <label for="c_desc">Describe what is going on</label>
+            <textarea id="c_desc" name="description" required minlength="10" style="min-height:130px"></textarea>
+            <p class="hint">A few lines are enough. Write as much or as little as you are comfortable with.</p>
+            <p class="hint" id="crisisNote"></p>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>How soon and how</legend>
+          <div class="field">
+            <label>How soon would you like to meet a counsellor?</label>
+            <div data-radios="urgency" data-options="__URGENCY__" data-required="1"></div>
+          </div>
+          <div class="grid two">
+            <div class="field">
+              <label>Preferred mode</label>
+              <div data-radios="mode" data-options="__MODES__" data-required="1"></div>
+            </div>
+            <div class="field">
+              <label for="c_time">Preferred time</label>
+              <input id="c_time" name="preferredTime" type="text" placeholder="e.g. after 3 pm, any weekday">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Referral</legend>
+          <div class="field">
+            <label>This request is</label>
+            <div data-radios="referral" data-options="__REFERRAL__"></div>
+          </div>
+          <div class="field"><label for="c_ref">Name of the referring person, if any</label><input id="c_ref" name="referrerName" type="text"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Consent</legend>
+          <label style="display:flex;gap:.6rem;align-items:flex-start;font-weight:400;color:var(--ink)">
+            <input type="checkbox" name="consent" required>
+            <span>I understand that what I discuss will be kept confidential, except where disclosure is
+            needed to protect my safety or the safety of others.</span>
+          </label>
+        </fieldset>
+
+        <button class="btn" type="submit" style="margin-top:1.4rem">Send request</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- MY REQUESTS -->
+  <section class="panel" data-panel="records">
+    <div class="card-head">
+      <div><span class="eyebrow">Your history</span><h2>Every request you have raised</h2></div>
+      <div class="spacer"></div>
+      <select id="recordFilter" style="width:auto">
+        <option value="">All stages</option>
+        <option value="submitted">Submitted</option>
+        <option value="assigned">Assigned</option>
+        <option value="scheduled">Scheduled</option>
+        <option value="reviewed">Reviewed</option>
+        <option value="closed">Closed</option>
+      </select>
+    </div>
+    <div id="requestList" class="skeleton">Loading…</div>
+  </section>
+
+  <!-- SESSION RECORDS -->
+  <section class="panel" data-panel="sessions">
+    <div class="card-head">
+      <div><span class="eyebrow">After each meeting</span><h2>What your mentor recorded</h2></div>
+    </div>
+    <div id="sessionList" class="skeleton">Loading…</div>
+  </section>
+
+  <!-- ALERTS -->
+  <section class="panel" data-panel="alerts">
+    <div class="card-head">
+      <div><span class="eyebrow">Notifications</span><h2>Alerts</h2></div>
+      <div class="spacer"></div>
+      <button class="btn neutral small" id="markAllRead" type="button">Mark all as read</button>
+    </div>
+    <div id="alertList" class="skeleton">Loading…</div>
+  </section>
+
+</main>
+
+<script type="module" src="assets/js/student.js"></script>
+</body>
+</html>

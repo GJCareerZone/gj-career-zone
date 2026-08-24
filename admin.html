@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Career Zone office — GJ Career Zone</title>
+<link rel="icon" href="assets/img/logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<header class="appbar" id="appbar"></header>
+
+<nav class="tabbar" aria-label="Sections">
+  <div class="wrap" style="display:flex;gap:.25rem">
+    <button data-tab="overview" role="tab">Overview</button>
+    <button data-tab="requests" role="tab">Counselling requests</button>
+    <button data-tab="profiles" role="tab">Profiling forms</button>
+    <button data-tab="mentor" role="tab">Mentor reviews</button>
+    <button data-tab="faculty" role="tab">Faculty</button>
+    <button data-tab="students" role="tab">Students</button>
+    <button data-tab="log" role="tab">Activity log</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <section class="panel" data-panel="overview">
+    <div id="adminBanner"></div>
+    <div class="grid four" style="margin-top:1rem" id="adminStats"></div>
+    <div class="grid two" style="margin-top:1rem">
+      <div class="card">
+        <span class="eyebrow">Waiting to be assigned</span>
+        <div id="adminQueue" class="skeleton">Loading…</div>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Mentor load</span>
+        <div id="adminLoad" class="skeleton">Loading…</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="requests">
+    <div class="card-head">
+      <div><span class="eyebrow">The queue</span><h2>Counselling requests</h2></div>
+      <div class="spacer"></div>
+      <input id="requestSearch" type="text" placeholder="Name, roll no. or request ID" style="width:min(260px,55vw)">
+      <select id="requestFilter" style="width:auto">
+        <option value="pending">Needs action</option>
+        <option value="">All</option>
+        <option value="submitted">Submitted</option>
+        <option value="assigned">Assigned</option>
+        <option value="scheduled">Scheduled</option>
+        <option value="reviewed">Reviewed</option>
+        <option value="closed">Closed</option>
+      </select>
+      <button class="btn neutral small" id="exportRequests" type="button">Export CSV</button>
+    </div>
+    <div id="adminRequestList" class="skeleton">Loading…</div>
+  </section>
+
+  <section class="panel" data-panel="profiles">
+    <div class="card-head">
+      <div><span class="eyebrow">Form 1</span><h2>Student profiling forms</h2></div>
+      <div class="spacer"></div>
+      <input id="profileSearch" type="text" placeholder="Search students" style="width:min(260px,55vw)">
+      <button class="btn neutral small" id="exportProfiles" type="button">Export CSV</button>
+    </div>
+    <div id="adminProfileList" class="skeleton">Loading…</div>
+  </section>
+
+  <section class="panel" data-panel="mentor">
+    <div class="card-head">
+      <div><span class="eyebrow">Form 3</span><h2>Mentor–mentee reviews</h2></div>
+      <div class="spacer"></div>
+      <input id="mentorSearch" type="text" placeholder="Search by student or mentor" style="width:min(260px,55vw)">
+      <button class="btn neutral small" id="exportMentor" type="button">Export CSV</button>
+    </div>
+    <div id="adminMentorList" class="skeleton">Loading…</div>
+  </section>
+
+  <section class="panel" data-panel="faculty">
+    <div class="grid two">
+      <div class="card">
+        <span class="eyebrow">Only the office can do this</span>
+        <h2>Add a faculty mentor</h2>
+        <p class="muted small">The mentor signs in with this email and password, and should change the password after the first sign-in.</p>
+        <form id="facultyForm" style="margin-top:1rem">
+          <div class="field"><label for="f_name">Full name</label><input id="f_name" name="name" type="text" required></div>
+          <div class="field"><label for="f_email">Institute email</label><input id="f_email" name="email" type="email" required></div>
+          <div class="grid two">
+            <div class="field"><label for="f_dept">Department</label><input id="f_dept" name="department" type="text"></div>
+            <div class="field"><label for="f_desig">Designation</label><input id="f_desig" name="designation" type="text" placeholder="e.g. Assistant Professor"></div>
+          </div>
+          <div class="grid two">
+            <div class="field"><label for="f_phone">Contact number</label><input id="f_phone" name="phone" type="tel"></div>
+            <div class="field"><label for="f_pass">Temporary password</label><input id="f_pass" name="password" type="text" minlength="6" required></div>
+          </div>
+          <button class="btn" type="submit">Create mentor account</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><span class="eyebrow">On the panel</span><h2>Faculty mentors</h2></div></div>
+        <div id="facultyList" class="skeleton">Loading…</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="students">
+    <div class="card-head">
+      <div><span class="eyebrow">Registered</span><h2>Students</h2></div>
+      <div class="spacer"></div>
+      <input id="studentSearch" type="text" placeholder="Search students" style="width:min(260px,55vw)">
+      <button class="btn neutral small" id="exportStudents" type="button">Export CSV</button>
+    </div>
+    <div id="studentList" class="skeleton">Loading…</div>
+  </section>
+
+  <section class="panel" data-panel="log">
+    <div class="card-head">
+      <div><span class="eyebrow">Who did what</span><h2>Activity log</h2></div>
+      <div class="spacer"></div>
+      <button class="btn neutral small" id="exportLog" type="button">Export CSV</button>
+    </div>
+    <div id="logList" class="skeleton">Loading…</div>
+  </section>
+
+</main>
+
+<script type="module" src="assets/js/admin.js"></script>
+</body>
+</html>

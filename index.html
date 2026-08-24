@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GJ Career Zone — counselling desk</title>
+<meta name="description" content="Request counselling, track your session and keep every mentoring record in one place — GJ Career Zone, GJIMT.">
+<link rel="icon" href="assets/img/logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="landing">
+
+<header class="appbar">
+  <div class="wrap appbar-inner">
+    <img class="logo" src="assets/img/logo.jpg" alt="GJIMT logo">
+    <div class="brandline">GJ Career Zone<span>GJIMT counselling desk</span></div>
+    <div class="spacer"></div>
+    <a class="btn ghost small" href="#access">Sign in</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">Confidential student support</span>
+        <h1>Ask for help once. Follow it all the way through.</h1>
+        <div class="rule"></div>
+        <p class="lead">
+          Every counselling request raised at GJIMT moves through the same five stages.
+          You can see where yours has reached at any time, and so can the mentor working on it.
+        </p>
+
+        <div class="spine" style="max-width:640px">
+          <div class="seg done">Submitted<span class="d">You raise the request</span></div>
+          <div class="seg done">Assigned<span class="d">Career Zone picks a mentor</span></div>
+          <div class="seg now">Scheduled<span class="d">Date and mode confirmed</span></div>
+          <div class="seg">Reviewed<span class="d">Mentor records the session</span></div>
+          <div class="seg">Closed<span class="d">Or carried to next review</span></div>
+        </div>
+        <p class="small muted" style="margin-top:1.4rem">
+          Discussions stay between you and your assigned mentor, except where disclosure is
+          needed for your safety or someone else's.
+        </p>
+      </div>
+
+      <div class="auth-card" id="access">
+        <div class="switcher" role="tablist">
+          <button type="button" role="tab" data-mode="login" aria-selected="true">Sign in</button>
+          <button type="button" role="tab" data-mode="register" aria-selected="false">Register as student</button>
+        </div>
+
+        <!-- sign in -->
+        <form id="loginForm">
+          <div class="field">
+            <label for="loginEmail">Institute email</label>
+            <input id="loginEmail" name="email" type="email" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+          </div>
+          <button class="btn" type="submit" style="width:100%">Sign in</button>
+          <p class="hint">
+            Students, faculty and the Career Zone office all sign in here — you land on your own dashboard.
+            <button type="button" class="linkbtn" id="forgotBtn">Forgot password?</button>
+          </p>
+          <p class="hint">Faculty accounts are created by the Career Zone office. Faculty cannot self-register.</p>
+        </form>
+
+        <!-- register -->
+        <form id="registerForm" class="hidden">
+          <div class="field">
+            <label for="regName">Full name</label>
+            <input id="regName" name="name" type="text" required>
+          </div>
+          <div class="grid two">
+            <div class="field">
+              <label for="regRoll">Roll number</label>
+              <input id="regRoll" name="rollNo" type="text" required>
+            </div>
+            <div class="field">
+              <label for="regPhone">Contact number</label>
+              <input id="regPhone" name="phone" type="tel" pattern="[0-9+ -]{8,15}" required>
+            </div>
+          </div>
+          <div class="grid two">
+            <div class="field">
+              <label for="regProgramme">Programme</label>
+              <select id="regProgramme" name="programme" required>
+                <option value="">Select</option>
+                <option>MBA</option><option>BBA</option><option>MCA</option>
+                <option>BCA</option><option>B.Tech</option><option>B.Com</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="regYearSem">Year / semester</label>
+              <input id="regYearSem" name="yearSem" type="text" placeholder="e.g. 2nd year, Sem 3" required>
+            </div>
+          </div>
+          <div class="field">
+            <label for="regEmail">Institute email</label>
+            <input id="regEmail" name="email" type="email" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="regPassword">Create a password</label>
+            <input id="regPassword" name="password" type="password" minlength="6" autocomplete="new-password" required>
+            <p class="hint">At least 6 characters.</p>
+          </div>
+          <button class="btn" type="submit" style="width:100%">Create my account</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="how">
+    <div class="wrap">
+      <span class="eyebrow">How the desk works</span>
+      <h2>Four records, one thread per student</h2>
+      <ol>
+        <li><strong>Register and profile</strong><span>Fill the student profiling form once. It reaches the Career Zone office and stays with your file.</span></li>
+        <li><strong>Raise a request</strong><span>Whenever you need to talk, submit a counselling request. Raise as many as you need.</span></li>
+        <li><strong>Get a mentor and a slot</strong><span>The office assigns a faculty mentor, fixes the date and notifies you both.</span></li>
+        <li><strong>Session on record</strong><span>Your mentor files a review form after the meeting, so the next one starts where this one ended.</span></li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <strong>Gian Jyoti Institute of Management and Technology</strong> — GJ Career Zone<br>
+    Phase-2, Mohali, Sector-54, Chandigarh, Punjab 160055 &nbsp;|&nbsp; 9914433199, 0172-2264566 &nbsp;|&nbsp;
+    <a href="https://www.gjimt.ac.in">gjimt.ac.in</a>
+  </div>
+</footer>
+
+<script type="module">
+import { registerStudent, login, resetPassword, readableAuthError, currentUser, loadProfile, HOME_FOR } from "./assets/js/auth.js";
+import { $, $$, collectForm, toast, busy } from "./assets/js/ui.js";
+
+/* already signed in? go straight to the right dashboard */
+(async () => {
+  const user = await currentUser();
+  if (!user) return;
+  const profile = await loadProfile(user.uid);
+  if (profile && HOME_FOR[profile.role]) location.replace(HOME_FOR[profile.role]);
+})();
+
+$$(".switcher button").forEach((b) => {
+  b.addEventListener("click", () => {
+    $$(".switcher button").forEach((x) => x.setAttribute("aria-selected", String(x === b)));
+    $("#loginForm").classList.toggle("hidden", b.dataset.mode !== "login");
+    $("#registerForm").classList.toggle("hidden", b.dataset.mode !== "register");
+  });
+});
+
+$("#loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = e.target.querySelector("button[type=submit]");
+  busy(btn, true, "Signing in…");
+  try {
+    const { email, password } = collectForm(e.target);
+    const profile = await login(email, password);
+    location.replace(HOME_FOR[profile.role] || "index.html");
+  } catch (err) {
+    toast(readableAuthError(err), "err");
+    busy(btn, false);
+  }
+});
+
+$("#registerForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = e.target.querySelector("button[type=submit]");
+  busy(btn, true, "Creating account…");
+  try {
+    await registerStudent(collectForm(e.target));
+    location.replace("student.html");
+  } catch (err) {
+    toast(readableAuthError(err), "err");
+    busy(btn, false);
+  }
+});
+
+$("#forgotBtn").addEventListener("click", async () => {
+  const email = $("#loginEmail").value.trim();
+  if (!email) { toast("Type your email above first, then tap reset.", "err"); return; }
+  try {
+    await resetPassword(email);
+    toast("Reset link sent. Check your inbox.", "ok");
+  } catch (err) {
+    toast(readableAuthError(err), "err");
+  }
+});
+</script>
+</body>
+</html>

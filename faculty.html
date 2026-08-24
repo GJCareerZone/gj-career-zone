@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mentor desk — GJ Career Zone</title>
+<link rel="icon" href="assets/img/logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+<header class="appbar" id="appbar"></header>
+
+<nav class="tabbar" aria-label="Sections">
+  <div class="wrap" style="display:flex;gap:.25rem">
+    <button data-tab="overview" role="tab">Overview</button>
+    <button data-tab="assigned" role="tab">Assigned to me</button>
+    <button data-tab="session" role="tab">Record a session</button>
+    <button data-tab="students" role="tab">Student files</button>
+    <button data-tab="alerts" role="tab">Alerts</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <section class="panel" data-panel="overview">
+    <div id="facultyBanner"></div>
+    <div class="grid four" style="margin-top:1rem" id="facultyStats"></div>
+    <div class="grid two" style="margin-top:1rem">
+      <div class="card">
+        <span class="eyebrow">Next meetings</span>
+        <div id="facultyUpcoming" class="skeleton">Loading…</div>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Recent alerts</span>
+        <div id="facultyAlerts" class="skeleton">Loading…</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" data-panel="assigned">
+    <div class="card-head">
+      <div><span class="eyebrow">Your caseload</span><h2>Requests assigned to you</h2></div>
+      <div class="spacer"></div>
+      <select id="assignedFilter" style="width:auto">
+        <option value="open">Open only</option>
+        <option value="">All stages</option>
+        <option value="assigned">Assigned</option>
+        <option value="scheduled">Scheduled</option>
+        <option value="reviewed">Reviewed</option>
+        <option value="closed">Closed</option>
+      </select>
+    </div>
+    <div id="assignedList" class="skeleton">Loading…</div>
+  </section>
+
+  <section class="panel" data-panel="session">
+    <div id="sessionHost"></div>
+  </section>
+
+  <section class="panel" data-panel="students">
+    <div class="card-head">
+      <div><span class="eyebrow">Everyone you have mentored</span><h2>Student files</h2></div>
+      <div class="spacer"></div>
+      <input id="studentSearch" type="text" placeholder="Search by name or roll no." style="width:min(280px,60vw)">
+    </div>
+    <div id="studentList" class="skeleton">Loading…</div>
+  </section>
+
+  <section class="panel" data-panel="alerts">
+    <div class="card-head">
+      <div><span class="eyebrow">Notifications</span><h2>Alerts</h2></div>
+      <div class="spacer"></div>
+      <button class="btn neutral small" id="markAllRead" type="button">Mark all as read</button>
+    </div>
+    <div id="alertList" class="skeleton">Loading…</div>
+  </section>
+
+</main>
+
+<script type="module" src="assets/js/faculty.js"></script>
+</body>
+</html>
