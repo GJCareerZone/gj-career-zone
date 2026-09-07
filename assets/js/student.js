@@ -4,7 +4,7 @@ import {
   $, $$, esc, toast, busy, collectForm, fillForm, wireTabs, renderAppbar,
   spine, fmtDate, fmtDateTime, ago, empty, dump, openModal
 } from "./ui.js";
-import { hydrateControls, LABELS, STATUS_META, actionPlanView } from "./forms.js";
+import { hydrateControls, LABELS, STATUS_META, actionPlanView, validateProfilingForm } from "./forms.js";
 import {
   saveProfilingForm, getProfilingForm, createCounsellingRequest, listRequestsByStudent,
   listMentorForms, listNotifications, markNotificationRead, markAllNotificationsRead,
@@ -38,6 +38,8 @@ async function loadProfilingForm() {
     });
   }
   togglePlacementReason();
+  toggleEntrepreneurDetails();
+  toggleHigherEdDetails();
   renderRequestGate();
 }
 
@@ -46,16 +48,42 @@ function togglePlacementReason() {
   $("#noPlacementWrap").hidden = !picked || picked.value !== "I will arrange my own placement";
 }
 
+function toggleEntrepreneurDetails() {
+  const picked = profilingForm.querySelector("input[name=entrepreneurInterest]:checked");
+  $("#entrepreneurDetails").hidden = !picked || picked.value !== "Yes";
+}
+
+function toggleHigherEdDetails() {
+  const picked = profilingForm.querySelector("input[name=higherEdInterest]:checked");
+  $("#higherEdDetails").hidden = !picked || picked.value !== "Yes";
+}
+
 profilingForm.addEventListener("change", (e) => {
   if (e.target.name === "placementConsent") togglePlacementReason();
+  if (e.target.name === "entrepreneurInterest") toggleEntrepreneurDetails();
+  if (e.target.name === "higherEdInterest") toggleHigherEdDetails();
 });
+
+function focusField(name) {
+  const el = profilingForm.querySelector(`[name="${name}"]`);
+  if (el) {
+    el.focus();
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
 
 profilingForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+  const data = collectForm(profilingForm);
+  const errors = validateProfilingForm(data);
+  if (errors.length) {
+    toast(errors[0].message, "err");
+    focusField(errors[0].field);
+    return;
+  }
   const btn = e.target.querySelector("button[type=submit]");
   busy(btn, true);
   try {
-    const data = collectForm(profilingForm);
     const first = !myProfilingForm;
     await saveProfilingForm(profile.uid, data);
     await updateUser(profile.uid, { profileComplete: true, name: data.name, phone: data.phone });
