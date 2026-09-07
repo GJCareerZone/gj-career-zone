@@ -110,7 +110,7 @@ export function eduTable() {
     <tbody>${EDU_ROWS.map(
       (r) => `<tr>
         <th scope="row" style="font-family:var(--body);text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--ink)">${esc(r.label)}</th>
-        <td><input type="text" name="edu_${r.key}_score" inputmode="decimal" placeholder="—"></td>
+        <td><input type="text" name="edu_${r.key}_score" inputmode="decimal" placeholder="—" ${r.key === "class12" ? "required" : ""}></td>
         <td><input type="text" name="edu_${r.key}_reappear" placeholder="Nil"></td>
       </tr>`
     ).join("")}</tbody></table></div>`;
@@ -123,7 +123,7 @@ export function rankTable() {
     <tbody>${CAREER_PRIORITIES.map(
       (p) => `<tr>
         <th scope="row" style="font-family:var(--body);text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--ink)">${esc(p.label)}</th>
-        <td><select name="rank_${p.key}"><option value="">—</option>${opts}</select></td>
+        <td><select name="rank_${p.key}" required><option value="">—</option>${opts}</select></td>
       </tr>`
     ).join("")}</tbody></table></div>`;
 }
@@ -218,6 +218,102 @@ export const LABELS = {
   escalatedTo: "Escalated / referred to",
   mentorRemarks: "Mentor's remarks"
 };
+
+/* ---------- profiling form validation ---------------------------------
+   Handles the checks a plain HTML form can't express on its own:
+   phone/email format, duplicate ranks, and fields that are only
+   required depending on another answer. Returns a list of
+   { field, message } — empty list means the form is good to save. */
+
+const PHONE_RE = /^[6-9]\d{9}$/;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function validateProfilingForm(data) {
+  const errors = [];
+
+  /* --- personal / contact --- */
+  if (!PHONE_RE.test(data.phone || "")) {
+    errors.push({ field: "phone", message: "Enter a valid 10-digit phone number, starting with 6-9." });
+  }
+  if (data.whatsapp && !PHONE_RE.test(data.whatsapp)) {
+    errors.push({ field: "whatsapp", message: "Enter a valid 10-digit WhatsApp number, or leave it blank." });
+  }
+  if (!EMAIL_RE.test(data.email || "")) {
+    errors.push({ field: "email", message: "Enter a valid email address." });
+  }
+  if (!data.address) errors.push({ field: "address", message: "Enter your present address." });
+  if (!data.bloodGroup) errors.push({ field: "bloodGroup", message: "Enter your blood group." });
+  if (!data.languages) errors.push({ field: "languages", message: "List the languages you know." });
+  if (!data.hobbies) errors.push({ field: "hobbies", message: "Tell us a hobby or interest." });
+
+  /* --- family details --- */
+  if (!data.familyMembers || Number(data.familyMembers) < 1 || Number(data.familyMembers) > 30) {
+    errors.push({ field: "familyMembers", message: "Enter the number of family members (1-30)." });
+  }
+  if (!data.parentOccupation) errors.push({ field: "parentOccupation", message: "Enter parent's occupation." });
+  if (!data.familyIncome) errors.push({ field: "familyIncome", message: "Enter family annual income." });
+  if (!data.livingWith) errors.push({ field: "livingWith", message: "Select who you are living with." });
+  if (!data.familyType) errors.push({ field: "familyType", message: "Select your family type." });
+
+  /* --- skills & career --- */
+  if (!data.skillsHave) errors.push({ field: "skillsHave", message: "List the skills you already have." });
+  if (!data.skillsWant) errors.push({ field: "skillsWant", message: "List the skills you want to develop." });
+  if (!data.goalYear1) errors.push({ field: "goalYear1", message: "Fill in your year 1 goal." });
+  if (!data.goalYear2) errors.push({ field: "goalYear2", message: "Fill in your year 2 goal." });
+  if (!data.goalYear3) errors.push({ field: "goalYear3", message: "Fill in your year 3 goal." });
+  if (!data.idol) errors.push({ field: "idol", message: "Tell us who you look up to." });
+  if (!data.challenges || !data.challenges.length) {
+    errors.push({ field: "challenges[]", message: "Pick at least one challenge you are facing." });
+  }
+  if (!data.supportNeeded || !data.supportNeeded.length) {
+    errors.push({ field: "supportNeeded[]", message: "Pick at least one kind of support you would like." });
+  }
+
+  const ranks = CAREER_PRIORITIES.map((p) => data[`rank_${p.key}`]).filter(Boolean);
+  if (ranks.length && new Set(ranks).size !== ranks.length) {
+    errors.push({
+      field: `rank_${CAREER_PRIORITIES[0].key}`,
+      message: "Each priority needs a different rank — the same number has been used twice."
+    });
+  }
+
+  /* --- placement consent --- */
+  if (!data.guardianName) errors.push({ field: "guardianName", message: "Enter S/o, D/o." });
+  if (!data.courseSemester) errors.push({ field: "courseSemester", message: "Enter course & semester." });
+  if (!data.placementConsent) errors.push({ field: "placementConsent", message: "Select a placement support option." });
+  if (data.placementConsent === "I will arrange my own placement" && !data.noPlacementReason) {
+    errors.push({ field: "noPlacementReason", message: "Tell us why you're arranging your own placement." });
+  }
+
+  /* --- entrepreneurship (only required if interested) --- */
+  if (!data.entrepreneurInterest) {
+    errors.push({ field: "entrepreneurInterest", message: "Tell us if you're interested in entrepreneurship." });
+  }
+  if (data.entrepreneurInterest === "Yes") {
+    if (!data.entrepreneurStage) errors.push({ field: "entrepreneurStage", message: "Select the stage you are at." });
+    if (!data.entrepreneurAreas || !data.entrepreneurAreas.length) {
+      errors.push({ field: "entrepreneurAreas[]", message: "Pick at least one area of entrepreneurship interest." });
+    }
+  }
+
+  /* --- higher education (only required if planning further study) --- */
+  if (!data.higherEdInterest) {
+    errors.push({ field: "higherEdInterest", message: "Tell us if you're planning to study further." });
+  }
+  if (data.higherEdInterest === "Yes") {
+    if (!data.higherEdDegree) errors.push({ field: "higherEdDegree", message: "Enter the degree you are planning." });
+    if (!data.higherEdLocation) errors.push({ field: "higherEdLocation", message: "Select where you plan to study." });
+    if (data.higherEdLocation === "Abroad" && !data.higherEdCountry) {
+      errors.push({ field: "higherEdCountry", message: "Enter the country you are considering." });
+    }
+    if (!data.higherEdExams) errors.push({ field: "higherEdExams", message: "Enter the entrance exams you are preparing for." });
+    if (!data.higherEdHelp || !data.higherEdHelp.length) {
+      errors.push({ field: "higherEdHelp[]", message: "Pick at least one area you'd like help with." });
+    }
+  }
+
+  return errors;
+}
 
 /* ---------- hydration -------------------------------------------------
    Pages declare repeated controls as empty divs:
