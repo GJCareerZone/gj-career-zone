@@ -3,12 +3,72 @@ import {
   $, $$, esc, toast, busy, collectForm, wireTabs, renderAppbar, spine,
   fmtDate, fmtDateTime, ago, empty, dump, openModal, confirmAction
 } from "./ui.js";
-import { LABELS, STATUS_META, actionPlanView } from "./forms.js";
+import { LABELS, STATUS_META, actionPlanView, EDU_ROWS, CAREER_PRIORITIES } from "./forms.js";
 import {
   listAllRequests, updateRequest, deleteRequest, listProfilingForms, deleteProfilingForm,
   listMentorForms, deleteMentorForm, listUsers, updateUser, deleteUserRecord,
   listNotifications, markNotificationRead, notify, audit, listAudit
 } from "./data.js";
+
+/* ---------------- print a student profiling form ---------------- */
+const PRINT_SECTIONS = [
+  ["1. Personal details", ["name", "guardianName", "courseBatch", "courseSemester", "yearSem", "phone", "whatsapp", "email", "address", "bloodGroup", "languages", "hobbies"]],
+  ["2. Family", ["familyMembers", "parentOccupation", "familyIncome", "livingWith", "familyType"]],
+  ["EDU", []],
+  ["4. Achievements", ["achCommunity", "achProfessional", "achAcademic", "achExtra", "achProjects"]],
+  ["5. Skills & goals", ["skillsHave", "skillsWant", "goalYear1", "goalYear2", "goalYear3", "idol"]],
+  ["6. Challenges & support", ["challenges", "supportNeeded"]],
+  ["RANK", []],
+  ["8. Placement", ["placementConsent", "noPlacementReason"]],
+  ["9. Entrepreneurship", ["entrepreneurInterest", "entrepreneurStage", "entrepreneurAreas", "entrepreneurOther"]],
+  ["10. Higher education", ["higherEdInterest", "higherEdDegree", "higherEdLocation", "higherEdCountry", "higherEdExams", "higherEdHelp", "higherEdOther"]],
+];
+
+function printStudentForm(p, s) {
+  const val = (v) => {
+    if (Array.isArray(v)) v = v.join(", ");
+    return v === undefined || v === null || String(v).trim() === "" ? "—" : esc(String(v));
+  };
+  const rows = (keys) =>
+    `<table>${keys.map((k) => `<tr><th>${esc(LABELS[k] || k)}</th><td>${val(p[k])}</td></tr>`).join("")}</table>`;
+
+  const body = PRINT_SECTIONS.map(([title, keys]) => {
+    if (title === "EDU") {
+      return `<h2>3. Education</h2><table class="grid"><tr><th>Level</th><th>Score</th><th>Reappears</th></tr>
+        ${EDU_ROWS.map((r) => `<tr><td>${esc(r.label)}</td><td>${val(p["edu_" + r.key + "_score"])}</td><td>${val(p["edu_" + r.key + "_reappear"])}</td></tr>`).join("")}
+        </table>${rows(["certifications"])}`;
+    }
+    if (title === "RANK") {
+      return `<h2>7. Career priorities (rank 1 = most important)</h2><table class="grid"><tr><th>Priority</th><th>Rank</th></tr>
+        ${CAREER_PRIORITIES.map((r) => `<tr><td>${esc(r.label)}</td><td>${val(p["rank_" + r.key])}</td></tr>`).join("")}</table>`;
+    }
+    return `<h2>${esc(title)}</h2>${rows(keys)}`;
+  }).join("");
+
+  const w = window.open("", "_blank", "width=900,height=1000");
+  if (!w) { toast("Allow pop-ups to print the form."); return; }
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8">
+<title>${esc(s?.name || p.name || "Student")} – Profiling Form</title>
+<style>
+  body{font:13px/1.45 system-ui,Arial,sans-serif;margin:24px auto;color:#111;max-width:800px;padding:0 16px}
+  h1{font-size:20px;margin:0 0 2px} .meta{color:#555;margin-bottom:12px}
+  h2{font-size:14px;margin:18px 0 6px;padding-bottom:3px;border-bottom:1.5px solid #333;break-after:avoid}
+  table{border-collapse:collapse;width:100%;margin-bottom:4px}
+  th,td{border:1px solid #bbb;padding:4px 8px;text-align:left;vertical-align:top}
+  th{width:38%;background:#f4f4f4;font-weight:600} table.grid th{width:auto} tr{break-inside:avoid}
+  .sig{margin-top:36px;display:flex;justify-content:space-between}
+  .sig div{border-top:1px solid #333;padding-top:4px;width:40%;text-align:center}
+  @media print{body{margin:0;max-width:none}}
+</style></head><body>
+<h1>Student Profiling Form</h1>
+<div class="meta">${esc(s?.name || p.name || "")}${s?.rollNo ? " · " + esc(s.rollNo) : ""} · Printed on ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</div>
+${body}
+<div class="sig"><div>Student signature</div><div>Mentor / Coordinator signature</div></div>
+</body></html>`);
+  w.document.close();
+  w.focus();
+  w.onload = () => w.print();
+}
 
 const profile = await requireRole("admin");
 let showTab;
@@ -254,6 +314,7 @@ function renderProfiles() {
             ${(p.challenges || []).map((s) => `<span class="tag">${esc(s)}</span>`).join("")}</p>
           <div class="actions">
             <button class="btn ghost small" data-open="${esc(p.id)}" type="button">Open form</button>
+            <button class="btn ghost small" data-print-profile="${esc(p.id)}" type="button">Print form</button>
             <button class="btn ghost small" data-history="${esc(p.studentId)}" type="button">Case history</button>
             <button class="btn ghost small" data-del-profile="${esc(p.id)}" type="button">Delete</button>
           </div>
@@ -265,9 +326,16 @@ function renderProfiles() {
     const p = profiles.find((x) => x.id === b.dataset.open);
     openModal(`<span class="eyebrow">Student profiling form</span><h2>${esc(p.name || "Student")}</h2>${dump(p, LABELS)}
       <div class="modal-actions">
-        <button class="btn neutral" onclick="window.print()" type="button">Print</button>
+        <button class="btn neutral" data-print-form type="button">Print</button>
         <button class="btn" data-close type="button">Close</button>
-      </div>`);
+      </div>`, {
+      onMount: (modal) => modal.querySelector("[data-print-form]").addEventListener("click", () =>
+        printStudentForm(p, students.find((s) => s.uid === p.studentId)))
+    });
+  }));
+  $$("[data-print-profile]", host).forEach((b) => b.addEventListener("click", () => {
+    const p = profiles.find((x) => x.id === b.dataset.printProfile);
+    printStudentForm(p, students.find((s) => s.uid === p.studentId));
   }));
   $$("[data-history]", host).forEach((b) => b.addEventListener("click", () => openHistory(b.dataset.history)));
   $$("[data-del-profile]", host).forEach((b) => b.addEventListener("click", async () => {
@@ -441,6 +509,7 @@ function renderStudents() {
           <p class="meta small">${esc(s.email)}${s.phone ? " · " + esc(s.phone) : ""} · joined ${esc(fmtDate(s.createdAt))}</p>
           <div class="actions">
             <button class="btn ghost small" data-history="${esc(s.uid)}" type="button">Open full file</button>
+            ${hasProfile ? `<button class="btn ghost small" data-print-student="${esc(s.uid)}" type="button">Print profiling form</button>` : ""}
             <button class="btn ghost small" data-toggle="${esc(s.uid)}" type="button">${s.active === false ? "Reactivate" : "Deactivate"}</button>
             <button class="btn ghost small" data-del-user="${esc(s.uid)}" type="button">Remove</button>
           </div>
@@ -449,6 +518,10 @@ function renderStudents() {
     : empty("No students yet", "Students appear here as soon as they register.");
 
   $$("[data-history]", host).forEach((b) => b.addEventListener("click", () => openHistory(b.dataset.history)));
+  $$("[data-print-student]", host).forEach((b) => b.addEventListener("click", () => {
+    const p = profiles.find((x) => x.studentId === b.dataset.printStudent);
+    if (p) printStudentForm(p, students.find((s) => s.uid === b.dataset.printStudent));
+  }));
   wireUserButtons(host);
 }
 
