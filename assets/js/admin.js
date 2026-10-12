@@ -74,6 +74,89 @@ ${body}
   w.onload = () => w.print();
 }
 
+/* ---------------- course & batch filters ---------------- */
+const COURSES = ["MBA", "BBA", "MCA", "BCA", "B.Tech", "B.Com"];
+const COURSE_PATTERN = {
+  "MBA": /\bMBA\b/, "BBA": /\bBBA\b/, "MCA": /\bMCA\b/, "BCA": /\bBCA\b/,
+  "B.Tech": /\bB\.?\s?TECH\b/, "B.Com": /\bB\.?\s?COM\b/
+};
+const filters = { profiles: { course: "", batch: "" }, students: { course: "", batch: "" } };
+let visibleProfiles = [];
+
+function courseOf(programme, text) {
+  const direct = String(programme || "").trim();
+  if (direct) return direct;
+  const t = String(text || "").toUpperCase();
+  return COURSES.find((c) => COURSE_PATTERN[c].test(t)) || "Other";
+}
+
+/* "MBA 2024-26", "BCA 2024–2026", "2024 to 26" → "2024-26"; a lone year stays as that year */
+function batchOf(text) {
+  const t = String(text || "");
+  const range = t.match(/(20\d{2})\s*(?:-|–|—|to)\s*(?:20)?(\d{2})\b/i);
+  if (range) return `${range[1]}-${range[2]}`;
+  const year = t.match(/\b(20\d{2})\b/);
+  return year ? year[1] : "";
+}
+
+function profileMeta(p) {
+  const st = students.find((s) => s.uid === p.studentId);
+  return { course: courseOf(st?.programme, p.courseBatch), batch: batchOf(p.courseBatch) };
+}
+
+function studentMeta(s) {
+  const p = profiles.find((x) => x.studentId === s.uid);
+  return { course: courseOf(s.programme, p?.courseBatch), batch: batchOf(p?.courseBatch) };
+}
+
+function passes(key, m) {
+  const f = filters[key];
+  return (!f.course || m.course === f.course) &&
+    (!f.batch || (f.batch === "none" ? !m.batch : m.batch === f.batch));
+}
+
+function mountFilters(key, searchSel, rerender) {
+  const make = (field, label) => {
+    const sel = document.createElement("select");
+    sel.dataset.filter = `${key}-${field}`;
+    sel.setAttribute("aria-label", label);
+    sel.style.cssText = "width:auto;min-width:130px";
+    sel.addEventListener("change", () => { filters[key][field] = sel.value; rerender(); });
+    return sel;
+  };
+  const count = document.createElement("span");
+  count.className = "muted small";
+  count.dataset.filterCount = key;
+  $(searchSel).before(count, make("course", "Filter by course"), make("batch", "Filter by batch"));
+}
+
+function fillFilters(key, metas) {
+  const f = filters[key];
+  const courseSel = document.querySelector(`[data-filter="${key}-course"]`);
+  const batchSel = document.querySelector(`[data-filter="${key}-batch"]`);
+  if (!courseSel || !batchSel) return;
+  const cc = {}, bc = {};
+  metas.forEach((m) => {
+    cc[m.course] = (cc[m.course] || 0) + 1;
+    const b = m.batch || "none";
+    bc[b] = (bc[b] || 0) + 1;
+  });
+  const courses = [...new Set([...COURSES, ...Object.keys(cc)])];
+  const batches = Object.keys(bc).filter((b) => b !== "none").sort().reverse();
+  if (bc.none) batches.push("none");
+  if (f.course && !courses.includes(f.course)) f.course = "";
+  if (f.batch && !batches.includes(f.batch)) f.batch = "";
+  courseSel.innerHTML = `<option value="">All courses</option>` + courses.map((c) =>
+    `<option value="${esc(c)}" ${f.course === c ? "selected" : ""}>${esc(c)} (${cc[c] || 0})</option>`).join("");
+  batchSel.innerHTML = `<option value="">All batches</option>` + batches.map((b) =>
+    `<option value="${esc(b)}" ${f.batch === b ? "selected" : ""}>${b === "none" ? "Not specified" : esc(b)} (${bc[b]})</option>`).join("");
+}
+
+function setFilterCount(key, shown, total) {
+  const el = document.querySelector(`[data-filter-count="${key}"]`);
+  if (el) el.textContent = `Showing ${shown} of ${total}`;
+}
+
 const profile = await requireRole("admin");
 let showTab;
 let requests = [], profiles = [], mentorForms = [], faculty = [], students = [], logs = [];
@@ -301,7 +384,12 @@ function caseload(uid) {
 /* ---------------- profiling forms ---------------- */
 function renderProfiles() {
   const term = ($("#profileSearch").value || "").toLowerCase();
-  const list = profiles.filter((p) => !term || [p.name, p.courseBatch, p.email].join(" ").toLowerCase().includes(term));
+  fillFilters("profiles", profiles.map(profileMeta));
+  const list = profiles.filter((p) =>
+    passes("profiles", profileMeta(p)) &&
+    (!term || [p.name, p.courseBatch, p.email].join(" ").toLowerCase().includes(term)));
+  visibleProfiles = list;
+  setFilterCount("profiles", list.length, profiles.length);
   const host = $("#adminProfileList");
   host.className = "";
   host.innerHTML = list.length
@@ -324,7 +412,9 @@ function renderProfiles() {
           </div>
         </article>`;
       }).join("")
-    : empty("No profiling forms yet", "Forms appear here as students submit them.");
+    : profiles.length
+      ? empty("No forms match", "Try a different course, batch or search.")
+      : empty("No profiling forms yet", "Forms appear here as students submit them.");
 
   $$("[data-open]", host).forEach((b) => b.addEventListener("click", () => {
     const p = profiles.find((x) => x.id === b.dataset.open);
@@ -352,7 +442,11 @@ function renderProfiles() {
 }
 
 $("#profileSearch").addEventListener("input", renderProfiles);
-$("#exportProfiles").addEventListener("click", () => downloadCSV("student-profiles.csv", profiles));
+$("#exportProfiles").addEventListener("click", () => {
+  const tag = [filters.profiles.course, filters.profiles.batch === "none" ? "no-batch" : filters.profiles.batch]
+    .filter(Boolean).join("-").replace(/[^\w.-]+/g, "_");
+  downloadCSV(`student-profiles${tag ? "-" + tag : ""}.csv`, visibleProfiles);
+});
 
 /* ---------------- mentor reviews ---------------- */
 function openReview(f) {
@@ -494,7 +588,11 @@ function openHistory(studentId) {
 
 function renderStudents() {
   const term = ($("#studentSearch").value || "").toLowerCase();
-  const list = students.filter((s) => !term || [s.name, s.rollNo, s.email, s.programme].join(" ").toLowerCase().includes(term));
+  fillFilters("students", students.map(studentMeta));
+  const list = students.filter((s) =>
+    passes("students", studentMeta(s)) &&
+    (!term || [s.name, s.rollNo, s.email, s.programme].join(" ").toLowerCase().includes(term)));
+  setFilterCount("students", list.length, students.length);
   const host = $("#studentList");
   host.className = "";
   host.innerHTML = list.length
@@ -519,7 +617,9 @@ function renderStudents() {
           </div>
         </article>`;
       }).join("")
-    : empty("No students yet", "Students appear here as soon as they register.");
+    : students.length
+      ? empty("No students match", "Try a different course, batch or search.")
+      : empty("No students yet", "Students appear here as soon as they register.");
 
   $$("[data-history]", host).forEach((b) => b.addEventListener("click", () => openHistory(b.dataset.history)));
   $$("[data-print-student]", host).forEach((b) => b.addEventListener("click", () => {
@@ -599,6 +699,8 @@ function renderOverview() {
 }
 
 /* ---------------- boot ---------------- */
+mountFilters("profiles", "#profileSearch", renderProfiles);
+mountFilters("students", "#studentSearch", renderStudents);
 await refreshAll();
 await loadLog();
 window.addEventListener("tabchange", (e) => { if (e.detail === "log") loadLog(); });
