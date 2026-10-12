@@ -51,7 +51,10 @@ function printStudentForm(p, s) {
 <title>${esc(s?.name || p.name || "Student")} – Profiling Form</title>
 <style>
   body{font:13px/1.45 system-ui,Arial,sans-serif;margin:24px auto;color:#111;max-width:800px;padding:0 16px}
-  h1{font-size:20px;margin:0 0 2px} .meta{color:#555;margin-bottom:12px}
+  h1{font-size:24px;margin:0 0 10px;text-align:center;text-transform:uppercase;letter-spacing:.5px}
+  .who{display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid #333;border-bottom:1px solid #333;padding:8px 0;margin-bottom:12px}
+  .who .nm{font-size:20px;font-weight:700} .who .rl{font-size:18px;font-weight:700}
+  .printed{color:#555;font-size:12px;text-align:right;margin-bottom:6px}
   h2{font-size:14px;margin:18px 0 6px;padding-bottom:3px;border-bottom:1.5px solid #333;break-after:avoid}
   table{border-collapse:collapse;width:100%;margin-bottom:4px}
   th,td{border:1px solid #bbb;padding:4px 8px;text-align:left;vertical-align:top}
@@ -61,7 +64,8 @@ function printStudentForm(p, s) {
   @media print{body{margin:0;max-width:none}}
 </style></head><body>
 <h1>Student Profiling Form</h1>
-<div class="meta">${esc(s?.name || p.name || "")}${s?.rollNo ? " · " + esc(s.rollNo) : ""} · Printed on ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</div>
+<div class="who"><span class="nm">${esc(s?.name || p.name || "")}</span>${s?.rollNo ? `<span class="rl">Roll No: ${esc(s.rollNo)}</span>` : ""}</div>
+<div class="printed">Printed on ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</div>
 ${body}
 <div class="sig"><div>Student signature</div><div>Mentor / Coordinator signature</div></div>
 </body></html>`);
